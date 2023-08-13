@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Помодоро таймер</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const circle = document.querySelector('.progress-ring__circle');
+            const radius = circle.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            circle.style.strokeDashoffset = circumference;
+
+            window.setProgress = function (percent) {
+                const offset = circumference - percent / 100 * circumference;
+                circle.style.strokeDashoffset = offset;
+            }
+
+            window.resetProgress = function () {
+                circle.style.strokeDashoffset = circumference;
+            }
+        });
+
+
+        let interval;
+        let pomodoroDuration = 0.2;  // время для Помодоро в минутах
+        let breakDuration = 0.1;     // время для перерыва в минутах
+
+        let breakMessages = [
+            "Расслабьтесь и растянитесь!",
+            "Вы заслужили этот перерыв!",
+            "Отдыхайте и думайте о чем-то приятном.",
+            "Вдохните глубоко и медленно выдохните.",
+            "Пора подумать о чем-то другом и расслабиться."
+        ];
+
+        function setLocalData(cname, cvalue) {
+            localStorage.setItem(cname, cvalue);
+        }
+
+        function getLocalData(cname) {
+            return localStorage.getItem(cname);
+        }
+
+        function removeLocalData(cname) {
+            localStorage.removeItem(cname);
+        }
+
+        // При загрузке страницы восстанавливаем состояние, если нужно
+        window.onload = function() {
+            console.log('Work Day:', getLocalData("work_day"));
+            console.log('Today:', new Date().toDateString());
+
+            if (getLocalData("work_day") === new Date().toDateString()) {
+                let elapsedTimeSincePomodoro = (new Date().getTime() - parseInt(getLocalData("time_start_pomodoro"))) / (1000 * 60);
+                console.log('Elapsed time since pomodoro:', elapsedTimeSincePomodoro);
+                console.log('Помиодрка ещё не закончилась?', elapsedTimeSincePomodoro < pomodoroDuration)
+
+                // Если помидорка все еще идет
+                if (elapsedTimeSincePomodoro < pomodoroDuration) {
+                    console.log('Pomodoro is still running. Time remaining:', pomodoroDuration - elapsedTimeSincePomodoro);
+                    startTimer(pomodoroDuration - elapsedTimeSincePomodoro, "pomodoro");
+                    document.getElementById("timer").style.display = 'block';
+                    document.getElementById("inputPomodoro").style.display = 'none';
+                }
+                // Если помидорка завершилась, но перерыв все еще идет
+                else if (elapsedTimeSincePomodoro < (pomodoroDuration + breakDuration)) {
+                    let elapsedTimeSinceRelaxStarted = elapsedTimeSincePomodoro - pomodoroDuration;
+                    console.log('Break is still running. Time remaining:', breakDuration - elapsedTimeSinceRelaxStarted);
+                    setLocalData("time_start_relax", new Date().getTime() - elapsedTimeSinceRelaxStarted * 60 * 1000); // обновляем время начала перерыва
+                    startTimer(breakDuration - elapsedTimeSinceRelaxStarted, "break");
+                    document.getElementById("timer").style.display = 'block';
+                    document.getElementById("inputPomodoro").style.display = 'none';
+                }
+                // Перерыв завершился
+                else {
+                    console.log('Break has finished.');
+                    document.getElementById("timerDisplay").textContent = "0:00";
+                    document.getElementById("endBreakButton").style.display = 'block';  // показываем кнопку завершения перерыва
+                }
+            } else {
+                console.log('Different work day. Clearing localStorage.');
+                localStorage.clear();
+                document.getElementById("timer").style.display = 'none';
+                document.getElementById("inputPomodoro").style.display = 'block';
+            }
+        };
+
+        function getRandomBreakMessage() {
+            return breakMessages[Math.floor(Math.random() * breakMessages.length)];
+        }
+
+        function updatePomodoroText(current, total) {
+            console.log("Updating pomodoro text:", current, total);
+
+            if (document.getElementById("pomodoroInfo").textContent.includes("Помидорка")) {
+                console.log("Updating break message:", getRandomBreakMessage());
+                document.getElementById("pomodoroInfo").textContent = `Перерыв ${current} из ${total}`;
+            } else {
+                console.log("Updating pomodoro message:", current, total);
+                document.getElementById("pomodoroInfo").textContent = `Помидорка ${current} из ${total}`;
+            }
+        }
+
+        function startPomodoro() {
+            let count = document.getElementById("pomodoroCount").value;
+
+            // Валидация поля
+            if (!count || count <= 0) {
+                alert("Пожалуйста, введите корректное количество помидорок.");
+                return;
+            }
+            setLocalData("count_pomodoro", count);
+            setLocalData("current_pomodoro", 1);
+            setLocalData("work_day", new Date().toDateString());
+            setLocalData("time_start_pomodoro", new Date().getTime());
+            setLocalData("time_start_relax", "None");
+            startTimer(pomodoroDuration, "pomodoro");
+            updatePomodoroText(1, count);
+            document.getElementById("inputPomodoro").style.display = 'none';
+            document.getElementById("timer").style.display = 'block';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 1;
+                setProgress(progress);
+                if (progress >= 100) {
+                    clearInterval(interval);
+                }
+            }, 600);
+        }
+
+        function startTimer(initialMinutes, typePeriod) {
+            console.log("Starting timer with:", initialMinutes, "minutes");
+
+            clearInterval(interval);
+
+            // Сброс прогресса круга
+            resetProgress();
+
+            let display = document.getElementById("timerDisplay");
+            let startTime = Date.now();
+            let endTime = startTime + initialMinutes * 60 * 1000;
+            let totalDuration = initialMinutes * 60;  // общая длительность в секундах
+
+            let minutes = Math.floor(initialMinutes);
+            let seconds = 0;
+
+            display.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+            if (typePeriod === "pomodoro") {
+                document.body.className = "pomodoro";
+                document.getElementById("pomodoroSound").play();
+                document.getElementById("breakSound").pause();
+                document.getElementById("breakSound").currentTime = 0;
+            } else {
+                document.body.className = "break";
+                document.getElementById("breakSound").play();
+                document.getElementById("pomodoroSound").pause();
+                document.getElementById("pomodoroSound").currentTime = 0;
+            }
+
+
+            // Если это таймер для помидоро, скрываем кнопку завершения перерыва
+            if (typePeriod === "pomodoro") {
+                console.log("Это таймер помидорки:");
+                updatePomodoroText(getLocalData("current_pomodoro"), getLocalData("count_pomodoro"));
+                document.getElementById("endBreakButton").style.display = 'none';
+                document.getElementById("breakMessage").textContent = "";
+                setLocalData("time_start_pomodoro", new Date().getTime());
+                setLocalData("time_start_relax", "None");
+            } else {
+                console.log("Это таймер перерыва:");
+                document.getElementById("endBreakButton").style.display = 'block';  // Этот код сделает кнопку видимой
+                updatePomodoroText(getLocalData("current_pomodoro"), getLocalData("count_pomodoro"));
+                document.getElementById("breakMessage").textContent = getRandomBreakMessage();
+                setLocalData("time_start_relax", new Date().getTime());
+                setLocalData("time_start_pomodoro", "None");
+            }
+
+            interval = setInterval(function() {
+                let now = Date.now();
+                let distance = endTime - now;
+
+                let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                // Обновляем прогресс круга
+                let elapsedTime = (totalDuration - (minutes * 60 + seconds));
+                let progressPercent = (elapsedTime / totalDuration) * 100;
+                setProgress(progressPercent);
+
+                display.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+                if (distance <= 0) {
+                    clearInterval(interval);
+                    display.textContent = "0:00";
+
+                    if (typePeriod === "pomodoro") {
+                        setLocalData("time_start_relax", new Date().getTime());
+                        startTimer(breakDuration, "break");
+                        document.getElementById("breakMessage").textContent = getRandomBreakMessage();
+                    } else {
+                        // TODO: Здесь должна быть ваша логика после завершения перерыва
+                        document.getElementById("breakMessage").textContent = "";
+                        document.getElementById("breakSound").pause();
+                    }
+                }
+            }, 1000);
+        }
+
+        function endBreak() {
+            // Увеличиваем значение текущей помидорки
+            let currentPomodoro = parseInt(getLocalData("current_pomodoro")) + 1;
+            setLocalData("current_pomodoro", currentPomodoro);
+
+            // Если достигнуто общее количество помидорок, можно завершить или предложить начать заново.
+            if (currentPomodoro > parseInt(getLocalData("count_pomodoro"))) {
+                document.getElementById("timer").style.display = 'none';
+                document.getElementById("inputPomodoro").style.display = 'block';
+                alert("Поздравляем! Вы завершили все помидорки.");
+            } else {
+                // Запускаем новую помидорку
+                updatePomodoroText(currentPomodoro, getLocalData("count_pomodoro"));
+                startTimer(pomodoroDuration, "pomodoro");
+            }
+        }
+
+    </script>
+    <style>
+        body.pomodoro {
+            background-color: red;
+        }
+
+        body.break {
+            background-color: blue;
+        }
+
+        /* круговой индикатор */
+        .circle {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .progress-circle {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            background-color: #f3f3f3;
+            border-radius: 50%;
+        }
+
+        .progress-ring__circle {
+            transition: 0.35s stroke-dashoffset;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* 100% от высоты экрана */
+        }
+
+        .text-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .svg-center-text {
+            font-size: 20px;
+            text-anchor: middle;
+            fill: #000;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container mt-5 d-flex h-100 align-items-center justify-content-center">
+        <div id="mainContent" class="text-center">
+            <div id="inputPomodoro">
+                <label for="pomodoroCount">Введите количество помидорок:</label>
+                <input type="number" id="pomodoroCount" class="form-control mb-3">
+                <button onclick="startPomodoro()" class="btn btn-primary">Поехали?</button>
+            </div>
+            <div id="timer" style="display: none;">
+                <h2 id="pomodoroInfo"></h2>
+                <div id="timerCircle" class="circle">
+<!--                    <h1 id="timerDisplay" class="position-absolute top-50 start-50 translate-middle"></h1>-->
+                        <svg class="progress-ring" width="120" height="120">
+                            <circle class="progress-ring__circle" stroke="white" stroke-width="4" fill="transparent" r="58" cx="60" cy="60"></circle>
+                            <text x="50%" y="50%" class="svg-center-text" dy=".3em" id="timerDisplay"></text>
+                        </svg>
+                </div>
+                <p id="breakMessage" style="font-size: 24px;"></p>
+                <button id="endBreakButton" onclick="endBreak()" class="btn btn-warning" style="display: none;">Закончить перерыв</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="pomodoroSound" src="https://sampleswap.org/samples-ghost/PUBLIC%20DOMAIN%20MUSIC/2359[kb]Alabama-Bound-by-Roger-McGuinn.mp3.mp3"></audio>
+    <audio id="breakSound" src="https://sampleswap.org/samples-ghost/PUBLIC%20DOMAIN%20MUSIC/2359[kb]Alabama-Bound-by-Roger-McGuinn.mp3.mp3"></audio>
+
+</body>
+</html>
