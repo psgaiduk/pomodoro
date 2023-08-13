@@ -9,8 +9,7 @@
     <script>
 
         const relax_songs = [
-          "Cumulus Nimbus - Quincas Moreira.mp3",
-          "Divine Life Society - Jesse Gallagher.mp3",
+          "https://ia803004.us.archive.org/8/items/meditationmusicbinauralbeat10min/Gamma%2040%20Hz-.mp3",
         ];
 
         let interval;
@@ -91,7 +90,7 @@
             const randomIndex = Math.floor(Math.random() * relax_songs.length);
 
             // Установка случайной песни в качестве источника
-            audioElement.src = "relax_music/" + relax_songs[randomIndex];
+            audioElement.src = relax_songs[randomIndex];
         }
 
         // При загрузке страницы восстанавливаем состояние, если нужно
@@ -396,7 +395,7 @@
     </div>
 
     <audio id="pomodoroSound" src="https://ia803004.us.archive.org/8/items/meditationmusicbinauralbeat10min/Gamma%2040%20Hz-.mp3"></audio>
-    <audio id="breakSound" src=""></audio>
+    <audio id="breakSound" src="https://ia803004.us.archive.org/8/items/meditationmusicbinauralbeat10min/Gamma%2040%20Hz-.mp3"></audio>
 
 </body>
 </html>
