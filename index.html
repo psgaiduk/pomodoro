@@ -265,12 +265,6 @@
             transform: rotate(-90deg);
             transform-origin: 50% 50%;
         }
-        .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh; /* 100% от высоты экрана */
-        }
 
         .text-center {
             display: flex;
@@ -284,24 +278,43 @@
             fill: #000;
         }
 
-        #mainContent {
+        body {
+            margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh; /* Делает контейнер высотой во всю высоту экрана */
+            height: 100vh;
+            overflow: hidden;
         }
 
         #stopMusic {
-          position: absolute;
-          top: 20px;
-          right: 20px;
-          padding: 10px 20px;
-          background-color: #ff6347;
-          color: #fff;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          transition: background-color 0.3s;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #ff6347;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            text-align: center;
+        }
+
+        #mainContent {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         #stopMusic:hover {
@@ -309,30 +322,30 @@
         }
 
 
+
     </style>
 </head>
 <body>
-    <div class="container mt-5 d-flex h-100 align-items-center justify-content-center">
+    <button id="stopMusic">Остановить музыку</button>
+    <div class="container mt-5 d-flex h-100">
         <div id="mainContent" class="text-center">
-            <button id="stopMusic">Остановить музыку</button>
-
+            <p id="breakMessage" style="font-size: 24px;"></p>
             <div id="inputPomodoro">
                 <label for="pomodoroCount">Введите количество помидорок:</label>
                 <input type="number" id="pomodoroCount" class="form-control mb-3">
                 <button onclick="startPomodoro()" class="btn btn-primary">Поехали?</button>
             </div>
+            <h2 id="pomodoroInfo"></h2>
             <div id="timer" style="display: none;">
-                <h2 id="pomodoroInfo"></h2>
                 <div id="timerCircle" class="circle">
-<!--                    <h1 id="timerDisplay" class="position-absolute top-50 start-50 translate-middle"></h1>-->
                         <svg class="progress-ring" width="120" height="120">
                             <circle class="progress-ring__circle" stroke="white" stroke-width="4" fill="transparent" r="58" cx="60" cy="60"></circle>
                             <text x="50%" y="50%" class="svg-center-text" dy=".3em" id="timerDisplay"></text>
                         </svg>
                 </div>
-                <p id="breakMessage" style="font-size: 24px;"></p>
-                <button id="endBreakButton" onclick="endBreak()" class="btn btn-warning" style="display: none;">Закончить перерыв</button>
             </div>
+            <button id="endBreakButton" onclick="endBreak()" class="btn btn-warning" style="display: none;">Закончить перерыв</button>
+
         </div>
     </div>
 
