@@ -23,10 +23,17 @@
             window.resetProgress = function () {
                 circle.style.strokeDashoffset = circumference;
             }
+
+            const stopMusicButton = document.getElementById('stopMusic');
+            stopMusicButton.addEventListener('click', () => {
+                document.getElementById("breakSound").pause();
+                document.getElementById("pomodoroSound").pause();
+            });
         });
 
 
         let interval;
+        let progressPercent = 0;
         let pomodoroDuration = 0.2;  // время для Помодоро в минутах
         let breakDuration = 0.1;     // время для перерыва в минутах
 
@@ -108,6 +115,8 @@
 
         function startPomodoro() {
             let count = document.getElementById("pomodoroCount").value;
+            progressPercent = 0; // Сбрасываем progressPercent для нового таймера
+            setProgress(0);
 
             // Валидация поля
             if (!count || count <= 0) {
@@ -124,14 +133,8 @@
             document.getElementById("inputPomodoro").style.display = 'none';
             document.getElementById("timer").style.display = 'block';
 
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 1;
-                setProgress(progress);
-                if (progress >= 100) {
-                    clearInterval(interval);
-                }
-            }, 600);
+            progressPercent = 0; // Сбрасываем progressPercent для нового таймера
+            setProgress(0);
         }
 
         function startTimer(initialMinutes, typePeriod) {
@@ -191,7 +194,8 @@
 
                 // Обновляем прогресс круга
                 let elapsedTime = (totalDuration - (minutes * 60 + seconds));
-                let progressPercent = (elapsedTime / totalDuration) * 100;
+                let progressIncrement = 50 / (totalDuration * 10);  // учитывая что totalDuration в секундах
+                progressPercent += progressIncrement;
                 setProgress(progressPercent);
 
                 display.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
@@ -210,7 +214,7 @@
                         document.getElementById("breakSound").pause();
                     }
                 }
-            }, 1000);
+            }, 50);
         }
 
         function endBreak() {
@@ -249,8 +253,8 @@
         }
 
         .progress-circle {
-            width: 200px;
-            height: 200px;
+            width: 400px;
+            height: 400px;
             position: relative;
             background-color: #f3f3f3;
             border-radius: 50%;
@@ -280,11 +284,38 @@
             fill: #000;
         }
 
+        #mainContent {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Делает контейнер высотой во всю высоту экрана */
+        }
+
+        #stopMusic {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          padding: 10px 20px;
+          background-color: #ff6347;
+          color: #fff;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: background-color 0.3s;
+        }
+
+        #stopMusic:hover {
+          background-color: #e53d26;
+        }
+
+
     </style>
 </head>
 <body>
     <div class="container mt-5 d-flex h-100 align-items-center justify-content-center">
         <div id="mainContent" class="text-center">
+            <button id="stopMusic">Остановить музыку</button>
+
             <div id="inputPomodoro">
                 <label for="pomodoroCount">Введите количество помидорок:</label>
                 <input type="number" id="pomodoroCount" class="form-control mb-3">
