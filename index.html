@@ -8,10 +8,6 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
     <script>
 
-        const relax_songs = [
-          "https://ia803004.us.archive.org/8/items/meditationmusicbinauralbeat10min/Gamma%2040%20Hz-.mp3",
-        ];
-
         let interval;
         let progressPercent = 0;
         let pomodoroDuration = 25;  // время для Помодоро в минутах
@@ -83,16 +79,6 @@
             });
         });
 
-        function changeToMyLocalSong() {
-            const audioElement = document.getElementById('breakSound');
-
-            // Получение случайного индекса
-            const randomIndex = Math.floor(Math.random() * relax_songs.length);
-
-            // Установка случайной песни в качестве источника
-            audioElement.src = relax_songs[randomIndex];
-        }
-
         // При загрузке страницы восстанавливаем состояние, если нужно
         window.onload = function() {
             console.log('Work Day:', getLocalData("work_day"));
@@ -113,7 +99,6 @@
                 // Если помидорка завершилась, но перерыв все еще идет
                 else if (elapsedTimeSincePomodoro < (pomodoroDuration + breakDuration)) {
                     let elapsedTimeSinceRelaxStarted = elapsedTimeSincePomodoro - pomodoroDuration;
-                    changeToMyLocalSong();
                     console.log('Break is still running. Time remaining:', breakDuration - elapsedTimeSinceRelaxStarted);
                     setLocalData("time_start_relax", new Date().getTime() - elapsedTimeSinceRelaxStarted * 60 * 1000); // обновляем время начала перерыва
                     startTimer(breakDuration - elapsedTimeSinceRelaxStarted, "break");
@@ -201,7 +186,6 @@
                 document.getElementById("breakSound").pause();
                 document.getElementById("breakSound").currentTime = 0;
             } else {
-                changeToMyLocalSong();
                 document.body.className = "break";
                 if (getLocalData("play_sound") !== "False") {
                     document.getElementById("breakSound").play();
@@ -370,7 +354,7 @@
 
     </style>
 </head>
-<body onload="changeToMyLocalSong()">
+<body>
     <button id="stopMusic">Остановить музыку</button>
     <div class="container mt-5 d-flex h-100">
         <div id="mainContent" class="text-center">
