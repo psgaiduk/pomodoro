@@ -7,30 +7,6 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const circle = document.querySelector('.progress-ring__circle');
-            const radius = circle.r.baseVal.value;
-            const circumference = radius * 2 * Math.PI;
-
-            circle.style.strokeDasharray = `${circumference} ${circumference}`;
-            circle.style.strokeDashoffset = circumference;
-
-            window.setProgress = function (percent) {
-                const offset = circumference - percent / 100 * circumference;
-                circle.style.strokeDashoffset = offset;
-            }
-
-            window.resetProgress = function () {
-                circle.style.strokeDashoffset = circumference;
-            }
-
-            const stopMusicButton = document.getElementById('stopMusic');
-            stopMusicButton.addEventListener('click', () => {
-                document.getElementById("breakSound").pause();
-                document.getElementById("pomodoroSound").pause();
-            });
-        });
-
 
         let interval;
         let progressPercent = 0;
@@ -56,6 +32,52 @@
         function removeLocalData(cname) {
             localStorage.removeItem(cname);
         }
+
+        setLocalData("play_sound", "True");
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const circle = document.querySelector('.progress-ring__circle');
+            const radius = circle.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            circle.style.strokeDashoffset = circumference;
+
+            window.setProgress = function (percent) {
+                const offset = circumference - percent / 100 * circumference;
+                circle.style.strokeDashoffset = offset;
+            }
+
+            window.resetProgress = function () {
+                circle.style.strokeDashoffset = circumference;
+            }
+
+            const stopMusicButton = document.getElementById('stopMusic');
+            stopMusicButton.addEventListener('click', () => {
+                const playSound = getLocalData("play_sound"); // Получаем текущее состояние звука из локальных данных
+
+                if (playSound === "True") {
+                    setLocalData("play_sound", "False");
+                    document.getElementById("breakSound").pause();
+                    document.getElementById("pomodoroSound").pause();
+                    stopMusicButton.textContent = "Включить музыку"; // Изменяем текст кнопки
+                    stopMusicButton.style.backgroundColor = "green"; // Изменяем цвет кнопки
+                } else {
+                    setLocalData("play_sound", "True");
+                    stopMusicButton.textContent = "Выключить музыку";
+                    stopMusicButton.style.backgroundColor = "red";
+                    if (document.body.className === "pomodoro") {
+                        document.getElementById("pomodoroSound").play();
+                    } else if (document.body.className === "break") {
+                        // Проверка, чтобы музыка не воспроизводилась, если перерыв закончился
+                        const elapsedTimeSinceRelaxStarted = (new Date().getTime() - parseInt(getLocalData("time_start_relax"))) / (1000 * 60);
+                        if (elapsedTimeSinceRelaxStarted < breakDuration) {
+                            document.getElementById("breakSound").play();
+                        }
+                    }
+                }
+            });
+        });
 
         // При загрузке страницы восстанавливаем состояние, если нужно
         window.onload = function() {
@@ -157,12 +179,16 @@
 
             if (typePeriod === "pomodoro") {
                 document.body.className = "pomodoro";
-                document.getElementById("pomodoroSound").play();
+                if (getLocalData("play_sound") !== "False") {
+                    document.getElementById("pomodoroSound").play();
+                }
                 document.getElementById("breakSound").pause();
                 document.getElementById("breakSound").currentTime = 0;
             } else {
                 document.body.className = "break";
-                document.getElementById("breakSound").play();
+                if (getLocalData("play_sound") !== "False") {
+                    document.getElementById("breakSound").play();
+                }
                 document.getElementById("pomodoroSound").pause();
                 document.getElementById("pomodoroSound").currentTime = 0;
             }
