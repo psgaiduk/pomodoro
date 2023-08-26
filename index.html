@@ -10,8 +10,8 @@
 
         let interval;
         let progressPercent = 0;
-        let pomodoroDuration = 25;  // время для Помодоро в минутах
-        let breakDuration = 5;     // время для перерыва в минутах
+        let pomodoroDuration = 0.25;  // время для Помодоро в минутах
+        let breakDuration = 0.05;     // время для перерыва в минутах
 
         let breakMessages = [
             "Сделай бёрпи",
@@ -152,7 +152,6 @@
             setLocalData("time_start_pomodoro", new Date().getTime());
             setLocalData("time_start_relax", "None");
             startTimer(pomodoroDuration, "pomodoro");
-            updatePomodoroText(1, count);
             document.getElementById("inputPomodoro").style.display = 'none';
             document.getElementById("timer").style.display = 'block';
 
@@ -194,22 +193,27 @@
                 document.getElementById("pomodoroSound").currentTime = 0;
             }
 
+            let current = getLocalData("current_pomodoro")
+            let total = getLocalData("count_pomodoro")
+            console.log("count", current, "total", total)
 
             // Если это таймер для помидоро, скрываем кнопку завершения перерыва
             if (typePeriod === "pomodoro") {
                 console.log("Это таймер помидорки:");
-                updatePomodoroText(getLocalData("current_pomodoro"), getLocalData("count_pomodoro"));
                 document.getElementById("endBreakButton").style.display = 'none';
                 document.getElementById("breakMessage").textContent = "";
                 setLocalData("time_start_pomodoro", new Date().getTime());
                 setLocalData("time_start_relax", "None");
+                document.getElementById("pomodoroInfo").textContent = `Помидорка ${current} из ${total}`;
+
+
             } else {
                 console.log("Это таймер перерыва:");
                 document.getElementById("endBreakButton").style.display = 'block';  // Этот код сделает кнопку видимой
-                updatePomodoroText(getLocalData("current_pomodoro"), getLocalData("count_pomodoro"));
                 document.getElementById("breakMessage").textContent = getRandomBreakMessage();
                 setLocalData("time_start_relax", new Date().getTime());
                 setLocalData("time_start_pomodoro", "None");
+                document.getElementById("pomodoroInfo").textContent = `Перерыв ${current} из ${total}`;
             }
 
             interval = setInterval(function() {
@@ -254,11 +258,11 @@
                 document.getElementById("timer").style.display = 'none';
                 document.getElementById("inputPomodoro").style.display = 'block';
                 document.getElementById("endBreakButton").style.display = 'none';
+                document.getElementById("pomodoroInfo").style.display = 'none';
                 document.getElementById("breakSound").pause();
                 alert("Поздравляем! Вы завершили все помидорки.");
             } else {
                 // Запускаем новую помидорку
-                updatePomodoroText(currentPomodoro, getLocalData("count_pomodoro"));
                 startTimer(pomodoroDuration, "pomodoro");
             }
         }
