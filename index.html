@@ -61,11 +61,11 @@
                     document.getElementById("breakSound").pause();
                     document.getElementById("pomodoroSound").pause();
                     stopMusicButton.textContent = "Включить музыку"; // Изменяем текст кнопки
-                    stopMusicButton.style.backgroundColor = "green"; // Изменяем цвет кнопки
+                    stopMusicButton.classList.add('active'); // Изменяем цвет кнопки
                 } else {
                     setLocalData("play_sound", "True");
                     stopMusicButton.textContent = "Остановить музыку";
-                    stopMusicButton.style.backgroundColor = "red";
+                    stopMusicButton.classList.remove('active');
                     if (document.body.className === "pomodoro") {
                         document.getElementById("pomodoroSound").play();
                     } else if (document.body.className === "break") {
@@ -297,7 +297,7 @@
     <style>
 
         body.pomodoro {
-            background-color: #F08080;
+            background-color: #CD5C5C;
         }
 
         body.break {
@@ -353,12 +353,24 @@
             top: 20px;
             right: 20px;
             padding: 10px 20px;
-            background-color: #ff6347;
+            background-color: #B22222;
             color: #fff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+        }
+
+        #stopMusic.active {
+            background-color: #228B22;
+        }
+
+        #stopMusic:hover {
+          background-color: #DC143C;
+        }
+
+        #stopAll:hover {
+          background-color: #DC143C;
         }
 
         #stopAll {
@@ -367,7 +379,7 @@
             top: 20px;
             left: 20px;
             padding: 10px 20px;
-            background-color: #ff6347;
+            background-color: #B22222;
             color: #fff;
             border: none;
             border-radius: 5px;
@@ -391,9 +403,6 @@
             align-items: center;
         }
 
-        #stopMusic:hover {
-          background-color: #e53d26;
-        }
 
 
 
