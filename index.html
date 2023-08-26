@@ -141,6 +141,8 @@
             progressPercent = 0; // Сбрасываем progressPercent для нового таймера
             setProgress(0);
 
+            document.getElementById('stopAll').style.display = 'block'
+
             // Валидация поля
             if (!count || count <= 0) {
                 alert("Пожалуйста, введите корректное количество помидорок.");
@@ -255,17 +257,27 @@
 
             // Если достигнуто общее количество помидорок, можно завершить или предложить начать заново.
             if (currentPomodoro > parseInt(getLocalData("count_pomodoro"))) {
-                document.getElementById("timer").style.display = 'none';
-                document.getElementById("inputPomodoro").style.display = 'block';
-                document.getElementById("endBreakButton").style.display = 'none';
-                document.getElementById("pomodoroInfo").style.display = 'none';
-                document.getElementById("breakSound").pause();
-                document.body.className = "";
-                alert("Поздравляем! Вы завершили все помидорки.");
+                endCycle();
             } else {
                 // Запускаем новую помидорку
                 startTimer(pomodoroDuration, "pomodoro");
             }
+        }
+
+        function endCycle() {
+            setLocalData("count_pomodoro", 0);
+            setLocalData("current_pomodoro", 0);
+            setLocalData("time_start_pomodoro", "None");
+            setLocalData("time_start_relax", "None");
+
+            document.getElementById("timer").style.display = 'none';
+            document.getElementById("inputPomodoro").style.display = 'block';
+            document.getElementById("endBreakButton").style.display = 'none';
+            document.getElementById("pomodoroInfo").style.display = 'none';
+            document.getElementById("breakSound").pause();
+            document.body.className = "";
+            document.getElementById('stopAll').style.display = 'none'
+            alert("Вы завершили все помидорки.")
         }
 
     </script>
@@ -336,6 +348,20 @@
             transition: background-color 0.3s;
         }
 
+        #stopAll {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #ff6347;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
         .container {
             display: flex;
             flex-direction: column;
@@ -361,6 +387,7 @@
     </style>
 </head>
 <body>
+    <button id="stopAll" onclick="endCycle()">Остановить цикл</button>
     <button id="stopMusic">Остановить музыку</button>
     <div class="container mt-5 d-flex h-100">
         <div id="mainContent" class="text-center">
