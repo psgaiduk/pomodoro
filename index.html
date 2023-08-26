@@ -11,7 +11,7 @@
         let interval;
         let progressPercent = 0;
         let pomodoroDuration = 0.25;  // время для Помодоро в минутах
-        let breakDuration = 0.05;     // время для перерыва в минутах
+        let breakDuration = 0.25;     // время для перерыва в минутах
 
         let breakMessages = [
             "Сделай бёрпи",
@@ -88,10 +88,14 @@
                 let elapsedTimeSincePomodoro = (new Date().getTime() - parseInt(getLocalData("time_start_pomodoro"))) / (1000 * 60);
                 console.log('Elapsed time since pomodoro:', elapsedTimeSincePomodoro);
                 console.log('Помиодрка ещё не закончилась?', elapsedTimeSincePomodoro < pomodoroDuration)
+                let total_pomodoro = getLocalData("count_pomodoro");
+                let current_pomodoro = getLocalData("current_pomodoro");
+                console.log('Total pomodoro:', total_pomodoro, 'Current pomodoro:', current_pomodoro);
 
                 // Если помидорка все еще идет
                 if (elapsedTimeSincePomodoro < pomodoroDuration) {
                     console.log('Pomodoro is still running. Time remaining:', pomodoroDuration - elapsedTimeSincePomodoro);
+                    document.getElementById('stopAll').style.display = 'block'
                     startTimer(pomodoroDuration - elapsedTimeSincePomodoro, "pomodoro");
                     document.getElementById("timer").style.display = 'block';
                     document.getElementById("inputPomodoro").style.display = 'none';
@@ -100,16 +104,26 @@
                 else if (elapsedTimeSincePomodoro < (pomodoroDuration + breakDuration)) {
                     let elapsedTimeSinceRelaxStarted = elapsedTimeSincePomodoro - pomodoroDuration;
                     console.log('Break is still running. Time remaining:', breakDuration - elapsedTimeSinceRelaxStarted);
-                    setLocalData("time_start_relax", new Date().getTime() - elapsedTimeSinceRelaxStarted * 60 * 1000); // обновляем время начала перерыва
+                    document.getElementById('stopAll').style.display = 'block'
                     startTimer(breakDuration - elapsedTimeSinceRelaxStarted, "break");
                     document.getElementById("timer").style.display = 'block';
                     document.getElementById("inputPomodoro").style.display = 'none';
+                    document.getElementById("breakSound").play();
+                }
+                else if (total_pomodoro > current_pomodoro) {
+                    let elapsedTimeSinceRelaxStarted = elapsedTimeSincePomodoro - pomodoroDuration;
+                    console.log('Break is still running. Time remaining:');
+                    document.getElementById('stopAll').style.display = 'block'
+                    startTimer(0.01, "break");
+                    document.getElementById("timer").style.display = 'block';
+                    document.getElementById("inputPomodoro").style.display = 'none';
+                    document.getElementById("breakSound").play();
                 }
                 // Перерыв завершился
                 else {
                     console.log('Break has finished.');
                     document.getElementById("timerDisplay").textContent = "0:00";
-                    document.getElementById("endBreakButton").style.display = 'block';  // показываем кнопку завершения перерыва
+                    document.getElementById("endBreakButton").style.display = 'none';  // показываем кнопку завершения перерыва
                 }
             } else {
                 console.log('Different work day. Clearing localStorage.');
@@ -214,7 +228,6 @@
                 document.getElementById("endBreakButton").style.display = 'block';  // Этот код сделает кнопку видимой
                 document.getElementById("breakMessage").textContent = getRandomBreakMessage();
                 setLocalData("time_start_relax", new Date().getTime());
-                setLocalData("time_start_pomodoro", "None");
                 document.getElementById("pomodoroInfo").textContent = `Перерыв ${current} из ${total}`;
             }
 
