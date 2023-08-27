@@ -10,8 +10,8 @@
 
         let interval;
         let progressPercent = 0;
-        let pomodoroDuration = 0.25;  // время для Помодоро в минутах
-        let breakDuration = 0.25;     // время для перерыва в минутах
+        let pomodoroDuration = 25;  // время для Помодоро в минутах
+        let breakDuration = 5;     // время для перерыва в минутах
 
         let breakMessages = [
             "Сделай бёрпи",
@@ -49,6 +49,8 @@
             }
 
             window.resetProgress = function () {
+                console.log("Resetting progress...");
+                console.log("circumference:", circumference);
                 circle.style.strokeDashoffset = circumference;
             }
 
@@ -267,6 +269,7 @@
             // Увеличиваем значение текущей помидорки
             let currentPomodoro = parseInt(getLocalData("current_pomodoro")) + 1;
             setLocalData("current_pomodoro", currentPomodoro);
+            setProgress(0);
 
             // Если достигнуто общее количество помидорок, можно завершить или предложить начать заново.
             if (currentPomodoro > parseInt(getLocalData("count_pomodoro"))) {
@@ -288,6 +291,7 @@
             document.getElementById("endBreakButton").style.display = 'none';
             document.getElementById("pomodoroInfo").style.display = 'none';
             document.getElementById("breakSound").pause();
+            document.getElementById("pomodoroSound").pause();
             document.body.className = "";
             document.getElementById('stopAll').style.display = 'none'
             alert("Вы завершили все помидорки.")
