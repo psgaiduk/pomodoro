@@ -10,8 +10,8 @@
 
         let interval;
         let progressPercent = 0;
-        let pomodoroDuration = 25;  // время для Помодоро в минутах
-        let breakDuration = 5;     // время для перерыва в минутах
+        let pomodoroDuration = 0.05;  // время для Помодоро в минутах
+        let breakDuration = 0.25;     // время для перерыва в минутах
 
         let breakMessages = [
             "Сделай бёрпи",
@@ -63,11 +63,11 @@
                     document.getElementById("breakSound").pause();
                     document.getElementById("pomodoroSound").pause();
                     stopMusicButton.textContent = "Включить музыку"; // Изменяем текст кнопки
-                    stopMusicButton.classList.add('active'); // Изменяем цвет кнопки
+                    stopMusicButton.className = 'active';
                 } else {
                     setLocalData("play_sound", "True");
                     stopMusicButton.textContent = "Остановить музыку";
-                    stopMusicButton.classList.remove('active');
+                    stopMusicButton.className = '';
                     if (document.body.className === "pomodoro") {
                         document.getElementById("pomodoroSound").play();
                     } else if (document.body.className === "break") {
@@ -98,6 +98,7 @@
                 if (elapsedTimeSincePomodoro < pomodoroDuration) {
                     console.log('Pomodoro is still running. Time remaining:', pomodoroDuration - elapsedTimeSincePomodoro);
                     document.getElementById('stopAll').style.display = 'block'
+                    document.getElementById('stopMusic').style.display = 'block'
                     startTimer(pomodoroDuration - elapsedTimeSincePomodoro, "pomodoro");
                     document.getElementById("timer").style.display = 'block';
                     document.getElementById("inputPomodoro").style.display = 'none';
@@ -107,6 +108,7 @@
                     let elapsedTimeSinceRelaxStarted = elapsedTimeSincePomodoro - pomodoroDuration;
                     console.log('Break is still running. Time remaining:', breakDuration - elapsedTimeSinceRelaxStarted);
                     document.getElementById('stopAll').style.display = 'block'
+                    document.getElementById('stopMusic').style.display = 'block'
                     startTimer(breakDuration - elapsedTimeSinceRelaxStarted, "break");
                     document.getElementById("timer").style.display = 'block';
                     document.getElementById("inputPomodoro").style.display = 'none';
@@ -116,6 +118,7 @@
                     let elapsedTimeSinceRelaxStarted = elapsedTimeSincePomodoro - pomodoroDuration;
                     console.log('Break is still running. Time remaining:');
                     document.getElementById('stopAll').style.display = 'block'
+                    document.getElementById('stopMusic').style.display = 'block'
                     startTimer(0.01, "break");
                     document.getElementById("timer").style.display = 'block';
                     document.getElementById("inputPomodoro").style.display = 'none';
@@ -158,6 +161,7 @@
             setProgress(0);
 
             document.getElementById('stopAll').style.display = 'block'
+            document.getElementById('stopMusic').style.display = 'block'
 
             // Валидация поля
             if (!count || count <= 0) {
@@ -182,8 +186,8 @@
 
             clearInterval(interval);
 
-            // Сброс прогресса круга
-            resetProgress();
+            progressPercent = 0; // Сбрасываем progressPercent для нового таймера
+            setProgress(0);
 
             let display = document.getElementById("timerDisplay");
             let startTime = Date.now();
@@ -194,6 +198,8 @@
             let seconds = 0;
 
             display.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            const stopMusicButton = document.getElementById('stopMusic');
+            const stopCycleButton = document.getElementById('stopAll');
 
             if (typePeriod === "pomodoro") {
                 document.body.className = "pomodoro";
@@ -202,6 +208,8 @@
                 }
                 document.getElementById("breakSound").pause();
                 document.getElementById("breakSound").currentTime = 0;
+                stopMusicButton.className = '';
+                stopCycleButton.className = '';
             } else {
                 document.body.className = "break";
                 if (getLocalData("play_sound") !== "False") {
@@ -209,6 +217,8 @@
                 }
                 document.getElementById("pomodoroSound").pause();
                 document.getElementById("pomodoroSound").currentTime = 0;
+                stopMusicButton.className = 'active_rest';
+                stopCycleButton.className = 'active_rest';
             }
 
             let current = getLocalData("current_pomodoro")
@@ -289,7 +299,10 @@
             document.getElementById("timer").style.display = 'none';
             document.getElementById("inputPomodoro").style.display = 'block';
             document.getElementById("endBreakButton").style.display = 'none';
+            document.getElementById("stopMusic").style.display = 'none';
+            document.getElementById("stopAll").style.display = 'none';
             document.getElementById("pomodoroInfo").style.display = 'none';
+            document.getElementById("breakMessage").textContent = "";
             document.getElementById("breakSound").pause();
             document.getElementById("pomodoroSound").pause();
             document.body.className = "";
@@ -369,9 +382,14 @@
             background-color: #228B22;
         }
 
+        #stopMusic.active_rest, #stopAll.active_rest {
+            background-color: #4169E1;
+        }
+
         #stopMusic:hover {
           background-color: #DC143C;
         }
+
 
         #stopAll:hover {
           background-color: #DC143C;
@@ -407,14 +425,20 @@
             align-items: center;
         }
 
+        #endBreakButton {
+            background: #4169E1;
+            border: none;
+            color: #fff;
+        }
+
 
 
 
     </style>
 </head>
 <body>
-    <button id="stopAll" onclick="endCycle()">Остановить цикл</button>
-    <button id="stopMusic">Остановить музыку</button>
+    <button id="stopAll" onclick="endCycle()", style="display: none;">Остановить цикл</button>
+    <button id="stopMusic" style="display: none;">Остановить музыку</button>
     <div class="container mt-5 d-flex h-100">
         <div id="mainContent" class="text-center">
             <p id="breakMessage" style="font-size: 24px;"></p>
