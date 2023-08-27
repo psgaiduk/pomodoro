@@ -10,8 +10,8 @@
 
         let interval;
         let progressPercent = 0;
-        let pomodoroDuration = 25;  // время для Помодоро в минутах
-        let breakDuration = 5;     // время для перерыва в минутах
+        let pomodoroDuration = 0.25;  // время для Помодоро в минутах
+        let breakDuration = 0.25;     // время для перерыва в минутах
 
         let breakMessages = [
             "Сделай бёрпи",
@@ -201,6 +201,7 @@
             const stopMusicButton = document.getElementById('stopMusic');
             const stopCycleButton = document.getElementById('stopAll');
 
+
             if (typePeriod === "pomodoro") {
                 document.body.className = "pomodoro";
                 if (getLocalData("play_sound") !== "False") {
@@ -257,10 +258,11 @@
                 setProgress(progressPercent);
 
                 display.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-
+                document.title = `${minutes}`;
                 if (distance <= 0) {
                     clearInterval(interval);
                     display.textContent = "0:00";
+                    document.title = `Помодоро таймер`;
 
                     if (typePeriod === "pomodoro") {
                         setLocalData("time_start_relax", new Date().getTime());
@@ -291,6 +293,8 @@
         }
 
         function endCycle() {
+            startTimer(0);
+
             setLocalData("count_pomodoro", 0);
             setLocalData("current_pomodoro", 0);
             setLocalData("time_start_pomodoro", "None");
@@ -307,6 +311,9 @@
             document.getElementById("pomodoroSound").pause();
             document.body.className = "";
             document.getElementById('stopAll').style.display = 'none'
+
+            document.title = `Помодоро таймер`;
+
             alert("Вы завершили все помидорки.")
         }
 
